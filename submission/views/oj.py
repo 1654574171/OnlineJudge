@@ -46,7 +46,8 @@ class SubmissionAPI(APIView):
                     return self.error("Your IP is not allowed in this contest")
 
     @validate_serializer(CreateSubmissionSerializer)
-    @login_required
+    #lsj 修改
+    # @login_required
     def post(self, request):
         data = request.data
         hide_id = False
@@ -71,12 +72,12 @@ class SubmissionAPI(APIView):
             return self.error("Problem not exist")
         if data["language"] not in problem.languages:
             return self.error(f"{data['language']} is now allowed in the problem")
-        submission = Submission.objects.create(user_id=request.user.id,
-                                               username=request.user.username,
+        submission = Submission.objects.create(user_id=1,
+                                               username="root",
                                                language=data["language"],
                                                code=data["code"],
                                                problem_id=problem.id,
-                                               ip=request.session["ip"],
+                                               ip="127.0.0.1",
                                                contest_id=data.get("contest_id"))
         # use this for debug
         # JudgeDispatcher(submission.id, problem.id).judge()
@@ -86,7 +87,7 @@ class SubmissionAPI(APIView):
         else:
             return self.success({"submission_id": submission.id})
 
-    @login_required
+    # @login_required
     def get(self, request):
         submission_id = request.GET.get("id")
         if not submission_id:
@@ -95,15 +96,15 @@ class SubmissionAPI(APIView):
             submission = Submission.objects.select_related("problem").get(id=submission_id)
         except Submission.DoesNotExist:
             return self.error("Submission doesn't exist")
-        if not submission.check_user_permission(request.user):
-            return self.error("No permission for this submission")
+        # if not submission.check_user_permission(request.user):
+        #     return self.error("No permission for this submission")
 
-        if submission.problem.rule_type == ProblemRuleType.OI or request.user.is_admin_role():
-            submission_data = SubmissionModelSerializer(submission).data
-        else:
-            submission_data = SubmissionSafeModelSerializer(submission).data
+        # if submission.problem.rule_type == ProblemRuleType.OI or request.user.is_admin_role():
+        #     submission_data = SubmissionModelSerializer(submission).data
+        # else:
+        submission_data = SubmissionSafeModelSerializer(submission).data
         # 是否有权限取消共享
-        submission_data["can_unshare"] = submission.check_user_permission(request.user, check_share=False)
+        # submission_data["can_unshare"] = submission.check_user_permission(request.user, check_share=False)
         return self.success(submission_data)
 
     @validate_serializer(ShareSubmissionSerializer)
