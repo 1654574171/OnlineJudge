@@ -62,7 +62,7 @@ class SubmissionAPI(APIView):
         if data.get("captcha"):
             if not Captcha(request).check(data["captcha"]):
                 return self.error("Invalid captcha")
-        error = self.throttling(request)
+        # error = self.throttling(request)
         # if error:
         #     return self.error(error)
 
